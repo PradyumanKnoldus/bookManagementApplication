@@ -2,11 +2,12 @@ package com.knoldus
 package service
 
 import model.Book
-import dao.BookManagementOperations
+import dao.{BookManagementDAO, BookManagementOperations}
+
 import java.util.UUID
 import scala.concurrent.Future
 
-class BookServicesImplementation(bookManagementOperations: BookManagementOperations) extends BookServices {
+class BookServicesImplementation(bookManagementOperations: BookManagementDAO) extends BookServices {
 
   // Method to create a new Book
   override def createBook(bookTitle: String, authorName: String, publishingYear: Int): Future[Either[String, Book]] = {

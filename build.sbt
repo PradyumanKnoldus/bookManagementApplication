@@ -21,4 +21,4 @@ libraryDependencies ++= Seq(
   "mysql" % "mysql-connector-java" % "8.0.32"
 )
 
-
+enablePlugins(ScoverageSbtPlugin)

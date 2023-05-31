@@ -21,54 +21,59 @@ class BookOperationsRoutes(bookServices: BookServicesImplementation)(implicit sy
   implicit val bookFormat: RootJsonFormat[Book] = jsonFormat4(Book)
   implicit val bookCreationFormat: RootJsonFormat[BookCreation] = jsonFormat3(BookCreation)
 
-  val routes: Route =
-    pathPrefix("bookStore") {
-      pathEndOrSingleSlash {
-        post {
-          entity(as[BookCreation]) { bookData =>
-            onComplete(bookServices.createBook(bookData.bookTitle, bookData.authorName, bookData.publishingYear)) {
-              case Success(Right(createdBook)) =>
-                complete(StatusCodes.Created, createdBook)
-              case Success(Left(message)) =>
-                complete(StatusCodes.Conflict, message)
-              case Failure(exception) =>
-                complete(StatusCodes.InternalServerError, s"An error occurred: ${exception.getMessage}")
-            }
-          }
-        } ~
-          get {
-            onComplete(bookServices.retrieveAllBooks) {
-              case Success(Right(books)) => complete(StatusCodes.OK, books)
-              case Success(Left(message)) => complete(StatusCodes.NoContent, message)
-              case Failure(exception) => complete(StatusCodes.InternalServerError, s"An error occurred: ${exception.getMessage}")
-            }
-          }
-      } ~
-        path(Segment) { id =>
-          get {
-            onComplete(bookServices.retrieveBook(id)) {
-              case Success(Right(Some(book))) => complete(StatusCodes.OK, book)
-              case Success(Left(message)) => complete(StatusCodes.NotFound, message)
-              case Failure(exception) => complete(StatusCodes.InternalServerError, s"An error occurred: ${exception.getMessage}")
-            }
-          } ~
-            put {
-              entity(as[Book]) { bookData =>
-                onComplete(bookServices.updateBook(id, bookData.bookTitle, bookData.authorName, bookData.publishingYear)) {
-                  case Success(Right(Some(book))) => complete(StatusCodes.OK, book)
-                  case Success(Left(message)) => complete(StatusCodes.NotFound, message)
-                  case Failure(exception) => complete(StatusCodes.InternalServerError, s"An error occurred: ${exception.getMessage}")
-                }
-              }
-            } ~
-            delete {
-              onComplete(bookServices.deleteBook(id)) {
-                case Success(Right(Some(book))) => complete(StatusCodes.OK, book)
-                case Success(Left(message)) => complete(StatusCodes.NotFound, message)
-                case Failure(exception) => complete(StatusCodes.InternalServerError, s"An error occurred: ${exception.getMessage}")
-              }
-            }
-        }
-    }
-}
+  val routes: Route = pathPrefix("bookStore") {
+    pathEndOrSingleSlash {
+      postBook ~ getBooks
+    } ~
+      path(Segment) { id =>
+        getBook(id) ~ updateBook(id) ~ deleteBook(id)
+      }
+  }
 
+  private def postBook: Route = post {
+    entity(as[BookCreation]) { bookData =>
+      onComplete(bookServices.createBook(bookData.bookTitle, bookData.authorName, bookData.publishingYear)) {
+        case Success(Right(createdBook)) =>
+          complete(StatusCodes.Created, createdBook)
+        case Success(Left(message)) =>
+          complete(StatusCodes.Conflict, message)
+        case Failure(exception) =>
+          complete(StatusCodes.InternalServerError, s"An error occurred: ${exception.getMessage}")
+      }
+    }
+  }
+
+  private def getBooks: Route = get {
+    onComplete(bookServices.retrieveAllBooks) {
+      case Success(Right(books)) => complete(StatusCodes.OK, books)
+      case Success(Left(message)) => complete(StatusCodes.NoContent, message)
+      case Failure(exception) => complete(StatusCodes.InternalServerError, s"An error occurred: ${exception.getMessage}")
+    }
+  }
+
+  private def getBook(id: String): Route = get {
+    onComplete(bookServices.retrieveBook(id)) {
+      case Success(Right(Some(book))) => complete(StatusCodes.OK, book)
+      case Success(Left(message)) => complete(StatusCodes.NotFound, message)
+      case Failure(exception) => complete(StatusCodes.InternalServerError, s"An error occurred: ${exception.getMessage}")
+    }
+  }
+
+  private def updateBook(id: String): Route = put {
+    entity(as[Book]) { bookData =>
+      onComplete(bookServices.updateBook(id, bookData.bookTitle, bookData.authorName, bookData.publishingYear)) {
+        case Success(Right(Some(book))) => complete(StatusCodes.OK, book)
+        case Success(Left(message)) => complete(StatusCodes.NotFound, message)
+        case Failure(exception) => complete(StatusCodes.InternalServerError, s"An error occurred: ${exception.getMessage}")
+      }
+    }
+  }
+
+  private def deleteBook(id: String): Route = delete {
+    onComplete(bookServices.deleteBook(id)) {
+      case Success(Right(Some(book))) => complete(StatusCodes.OK, book)
+      case Success(Left(message)) => complete(StatusCodes.NotFound, message)
+      case Failure(exception) => complete(StatusCodes.InternalServerError, s"An error occurred: ${exception.getMessage}")
+    }
+  }
+}

@@ -21,4 +21,14 @@ libraryDependencies ++= Seq(
   "mysql" % "mysql-connector-java" % "8.0.32"
 )
 
-enablePlugins(ScoverageSbtPlugin)
+libraryDependencies ++= Seq(
+  "org.scalafx" %% "scalafx" % "16.0.0-R25"
+)
+
+libraryDependencies ++= Seq(
+  "org.openjfx" % "javafx-controls" % "19.0.2.1",
+  "org.openjfx" % "javafx-fxml" % "19.0.2.1",
+  "org.openjfx" % "javafx-media" % "19.0.2.1"
+)
+
+//enablePlugins(ScoverageSbtPlugin)
